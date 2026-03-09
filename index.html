@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clipping – Últimas</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--black:#111111;--red:#CC2200;--bg:#F7F5F0;--border:#DEDAD3;--mid:#777;--light:#F0EDE8}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--black);font-size:14px}
+header{background:var(--black);color:white;border-bottom:3px solid var(--red);position:sticky;top:0;z-index:200}
+.ht{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:54px;max-width:1280px;margin:0 auto}
+.logo{display:flex;align-items:baseline;gap:12px}
+.logo h1{font-size:22px;font-weight:700;color:white;letter-spacing:-.5px}
+.logo .sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#999}
+.hc{display:flex;align-items:center;gap:12px}
+#pill{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:4px 12px;font-size:12px;color:#bbb}
+.dot{width:6px;height:6px;border-radius:50%;background:#4caf50;flex-shrink:0}
+.dot.loading{background:#f0c040;animation:blink .8s infinite}
+.dot.idle{background:#666}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+#cd{font-size:11px;color:#aaa;min-width:80px;text-align:right}
+#btnR{background:var(--red);color:white;border:none;border-radius:4px;padding:6px 16px;font:600 12px sans-serif;cursor:pointer}
+#btnR:hover{opacity:.85}#btnR:disabled{opacity:.4;cursor:not-allowed}
+.fb{background:white;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.fi{display:flex;align-items:center;gap:2px;padding:0 20px;max-width:1280px;margin:0 auto;min-width:max-content}
+.fbt{background:none;border:none;border-bottom:3px solid transparent;padding:10px 14px;font:500 13px sans-serif;color:var(--mid);cursor:pointer;white-space:nowrap;margin-bottom:-1px}
+.fbt:hover{color:var(--black)}.fbt.active{color:var(--red);border-bottom-color:var(--red);font-weight:600}
+.kb{background:var(--light);border-bottom:1px solid var(--border)}
+.kbi{padding:7px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;max-width:1280px;margin:0 auto}
+.kl{font-size:10px;font-weight:600;color:var(--mid);text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+.kc{background:white;border:1px solid var(--border);border-radius:3px;padding:3px 10px;font-size:12px;font-weight:500;cursor:pointer;color:var(--black)}
+.kc:hover{border-color:var(--red);color:var(--red)}.kc.active{background:var(--red);color:white;border-color:var(--red)}.kc.dim{opacity:.4}
+.tw{background:var(--bg);border-bottom:1px solid var(--border)}
+.tb{display:flex;align-items:center;gap:10px;padding:9px 20px;max-width:1280px;margin:0 auto}
+#sb{flex:1;max-width:300px;background:white;border:1px solid var(--border);border-radius:4px;padding:6px 12px;font:13px sans-serif;color:var(--black)}
+#sb:focus{outline:none;border-color:var(--red)}#sb::placeholder{color:#aaa}
+.tr{margin-left:auto;display:flex;gap:8px;align-items:center}
+#nc{font-size:12px;color:var(--mid);white-space:nowrap}
+.tb2{background:none;border:1px solid var(--border);border-radius:4px;padding:5px 12px;font:12px sans-serif;color:var(--mid);cursor:pointer}
+.tb2:hover{border-color:var(--black);color:var(--black)}
+.fw{max-width:1280px;margin:0 auto;padding:0 20px 48px}
+.ni{display:flex;align-items:baseline;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);animation:fadein .2s ease both}
+@keyframes fadein{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.ns{font-size:11px;font-weight:700;color:white;background:#555;padding:2px 7px;border-radius:2px;white-space:nowrap;flex-shrink:0;min-width:72px;text-align:center}
+.nt{flex:1;font-size:14px;color:var(--black);text-decoration:none;line-height:1.45}
+.nt:hover{color:var(--red);text-decoration:underline}
+.nk{font-size:10px;background:#eeeeff;color:#334;border-radius:2px;padding:1px 5px;white-space:nowrap;flex-shrink:0;font-weight:600}
+.nd{font-size:11px;color:var(--mid);white-space:nowrap;flex-shrink:0}
+.sk{padding:11px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center}
+.sb2{background:linear-gradient(90deg,#e8e5e0 25%,#d5d2cd 50%,#e8e5e0 75%);background-size:400% 100%;animation:sh 1.2s infinite linear;border-radius:3px}
+@keyframes sh{0%{background-position:100%}100%{background-position:-100%}}
+#em{padding:64px 20px;text-align:center;color:var(--mid)}
+#em .ico{font-size:40px;margin-bottom:14px}
+#em h3{font:600 18px serif;color:var(--black);margin-bottom:8px}
+#em p{font-size:13px;max-width:360px;margin:0 auto;line-height:1.6}
+#so{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center}
+#so.open{display:flex}
+#sx{background:white;border-radius:8px;padding:28px 32px;width:580px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.25)}
+#sx h2{font:700 18px serif;margin-bottom:22px}
+.sg{margin-bottom:16px}
+.sg label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--mid);margin-bottom:5px}
+.sg input,.sg textarea{width:100%;border:1px solid var(--border);border-radius:4px;padding:8px 12px;font:13px sans-serif;color:var(--black);background:var(--bg)}
+.sg input:focus,.sg textarea:focus{outline:none;border-color:var(--red);background:white}
+.sg textarea{resize:vertical;min-height:80px;line-height:1.5}
+.sh{font-size:11px;color:#999;margin-top:4px}
+.sf{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;border-top:1px solid var(--border);padding-top:18px}
+.bc{background:none;border:1px solid var(--border);border-radius:4px;padding:8px 20px;font:13px sans-serif;cursor:pointer}
+.bs{background:var(--red);color:white;border:none;border-radius:4px;padding:8px 24px;font:600 13px sans-serif;cursor:pointer}
+.pf{max-width:1280px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border)}
+#lu{font-size:11px;color:var(--mid);margin-left:auto}
+#lb{display:none;background:#111;color:#7fff7f;font:11px/1.6 monospace;padding:12px 16px;max-height:150px;overflow-y:auto;border-radius:4px;margin:0 20px 12px;max-width:1240px;margin-left:auto;margin-right:auto}
+#lb span{display:block}.lw{color:#f0c040}.lr2{color:#ff6b6b}
+.sv{background:#00568c}.sf2{background:#004080}.sg2{background:#0066cc}
+.se{background:#2d2d2d}.sc{background:#cc0000}.sm{background:#7b1fa2}
+.sg3{background:#003d82}.su{background:#c0392b}.sbr{background:#006600}
+.si{background:#e65c00}.sd{background:#555}
+#fr{background:linear-gradient(135deg,#1a1a1a,#2a2020);color:white;padding:16px 20px;border-bottom:2px solid var(--red)}
+.fri{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.fri p{font-size:13px;flex:1;color:#ddd}.fri strong{color:white}
+.fb2{background:var(--red);color:white;border:none;border-radius:4px;padding:7px 18px;font:600 12px sans-serif;cursor:pointer}
+.fc{background:rgba(255,255,255,.1);color:white;border:none;border-radius:4px;padding:7px 14px;font:12px sans-serif;cursor:pointer}
+@media(max-width:680px){.nk,.nd{display:none}.sub{display:none}#sb{max-width:140px}}
+</style>
+</head>
+<body>
+<div id="fr" style="display:none">
+  <div class="fri">
+    <p>👋 <strong>Bem-vindo ao Clipping!</strong> Configure palavras-chave para filtrar notícias.</p>
+    <button class="fb2" onclick="openS()">⚙️ Configurar</button>
+    <button class="fc" onclick="this.closest('#fr').style.display='none'">✕</button>
+  </div>
+</div>
+<header>
+  <div class="ht">
+    <div class="logo">
+      <h1 id="lt">Clipping – Últimas</h1>
+      <span class="sub" id="ls">Monitoramento de Mídia</span>
+    </div>
+    <div class="hc">
+      <span id="cd"></span>
+      <div id="pill"><div class="dot idle" id="sd"></div><span id="st">Aguardando</span></div>
+      <button id="btnR" onclick="doFetch()">↻ Atualizar</button>
+    </div>
+  </div>
+</header>
+<div class="fb"><div class="fi" id="srcBar"><button class="fbt active" onclick="setSrc('all',this)">Todos</button></div></div>
+<div class="kb"><div class="kbi" id="kwBar"><span class="kl">Palavras-chave:</span><span style="font-size:12px;color:#aaa">Nenhuma — exibindo todas as notícias</span></div></div>
+<div class="tw"><div class="tb"><input type="text" id="sb" placeholder="🔍 Buscar no feed..." oninput="render()"><div class="tr"><span id="nc"></span><button class="tb2" onclick="expCSV()">⬇ CSV</button><button class="tb2" onclick="openS()">⚙ Config</button></div></div></div>
+<div class="fw"><div id="nl"><div id="em"><div class="ico">📰</div><h3>Nenhuma notícia ainda</h3><p>Clique em <strong>↻ Atualizar</strong> para buscar as últimas notícias.</p></div></div></div>
+<div class="pf"><button class="tb2" onclick="togLog()">📋 Log</button><span id="lu"></span></div>
+<div id="lb"></div>
+<div id="so" onclick="if(event.target===this)closeS()">
+  <div id="sx">
+    <h2>⚙️ Configurações do Clipping</h2>
+    <div class="sg"><label>Título</label><input type="text" id="ct" value="Clipping – Últimas"></div>
+    <div class="sg"><label>Subtítulo / Empresa</label><input type="text" id="cs" value="Monitoramento de Mídia"></div>
+    <div class="sg"><label>Intervalo automático (minutos) — 0 = desligado</label><input type="number" id="ci" value="10" min="0" max="1440"></div>
+    <div class="sg"><label>Palavras-chave (uma por linha)</label><textarea id="ck" rows="6" placeholder="Vorcaro&#10;Lula&#10;Selic&#10;Master"></textarea></div>
+    <div class="sg"><label>Fontes RSS (Nome|URL, uma por linha)</label><textarea id="cf" rows="12" style="font-size:12px;font-family:monospace"></textarea><p class="sh">Formato: Nome|https://url.do/rss.xml</p></div>
+    <div class="sg"><label>Máximo de notícias</label><input type="number" id="cm" value="500" min="50" max="2000"></div>
+    <div class="sf"><button class="bc" onclick="closeS()">Cancelar</button><button class="bs" onclick="saveS()">💾 Salvar e Atualizar</button></div>
+  </div>
+</div>
+<script>
+const DF=[
+  {name:'Valor',url:'https://valor.globo.com/rss/home/feed.xml',cls:'sv'},
+  {name:'Folha',url:'https://feeds.folha.uol.com.br/poder/rss091.xml',cls:'sf2'},
+  {name:'Globo',url:'https://oglobo.globo.com/rss/feed.xml',cls:'sg2'},
+  {name:'Estadão',url:'https://www.estadao.com.br/arc/outboundfeeds/rss/?outputType=xml',cls:'se'},
+  {name:'CNN Brasil',url:'https://www.cnnbrasil.com.br/feed/',cls:'sc'},
+  {name:'Metrópoles',url:'https://www.metropoles.com/feed',cls:'sm'},
+  {name:'G1 Blogs',url:'https://g1.globo.com/rss/g1/politica/',cls:'sg3'},
+  {name:'UOL',url:'https://rss.uol.com.br/feed/noticias.xml',cls:'su'},
+  {name:'BrazilJournal',url:'https://braziljournal.com/feed/',cls:'sbr'},
+  {name:'InfoMoney',url:'https://www.infomoney.com.br/feed/',cls:'si'}
+];
+const PX=[u=>'https://api.allorigins.win/get?url='+encodeURIComponent(u),u=>'https://corsproxy.io/?'+encodeURIComponent(u)];
+let cfg={title:'Clipping – Últimas',sub:'Monitoramento de Mídia',interval:10,keywords:[],feeds:DF,maxItems:500};
+let all=[],sf='all',kf='all',ct=null,sl=0,busy=false;
+(function(){try{const s=localStorage.getItem('ccfg');if(s){cfg={...cfg,...JSON.parse(s)};if(!cfg.feeds||!cfg.feeds.length)cfg.feeds=DF;}}catch(e){}apT();bSrc();bKw();try{const c=localStorage.getItem('citems');if(c){all=JSON.parse(c);bSrc();bKw();render();}}catch(e){}if(!localStorage.getItem('cseen')){document.getElementById('fr').style.display='block';localStorage.setItem('cseen','1');}if(cfg.interval>0)stCD();setSt('idle','Pronto');})();
+function apT(){document.getElementById('lt').textContent=cfg.title;document.getElementById('ls').textContent=cfg.sub;document.title=cfg.title;}
+function setSt(t,tx){document.getElementById('st').textContent=tx;document.getElementById('sd').className='dot '+(t==='active'?'':t);}
+function lg(m,t){const b=document.getElementById('lb');const s=document.createElement('span');s.className=t==='w'?'lw':t==='e'?'lr2':'';s.textContent='['+new Date().toLocaleTimeString('pt-BR')+'] '+m;b.appendChild(s);b.scrollTop=b.scrollHeight;}
+function togLog(){const b=document.getElementById('lb');b.style.display=b.style.display==='block'?'none':'block';}
+function skels(n){document.getElementById('nl').innerHTML=Array(n||8).fill('<div class="sk"><div class="sb2" style="width:72px;height:20px;flex-shrink:0"></div><div class="sb2" style="flex:1;height:16px"></div><div class="sb2" style="width:58px;height:14px;flex-shrink:0"></div></div>').join('');}
+function fd(d){if(!d)return'';const dt=new Date(d);if(isNaN(dt))return'';return dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function stCD(){clearTimeout(ct);sl=cfg.interval*60;tick();}
+function tick(){const el=document.getElementById('cd');if(sl<=0){el.textContent='';doFetch();return;}const m=Math.floor(sl/60),s=sl%60;el.textContent='Próx: '+m+':'+String(s).padStart(2,'0');sl--;ct=setTimeout(tick,1000);}
+async function doFetch(){if(busy)return;busy=true;document.getElementById('btnR').disabled=true;setSt('loading','Buscando...');skels();clearTimeout(ct);const res=await Promise.allSettled(cfg.feeds.map(f=>fetchF(f)));let ni=[];res.forEach((r,i)=>{if(r.status==='fulfilled'){ni.push(...r.value);lg('✅ '+cfg.feeds[i].name+': '+r.value.length+' itens');}else{lg('⚠ '+cfg.feeds[i].name+': falha','w');}});const seen=new Set(all.map(i=>i.link));const fresh=ni.filter(i=>!seen.has(i.link));all=[...fresh,...all].sort((a,b)=>new Date(b.pd)-new Date(a.pd)).slice(0,cfg.maxItems||500);try{localStorage.setItem('citems',JSON.stringify(all));}catch(e){}document.getElementById('lu').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');lg('🗞 Total: '+all.length+' itens');bSrc();bKw();render();setSt('active',all.length+' notícias');busy=false;document.getElementById('btnR').disabled=false;if(cfg.interval>0)stCD();}
+async function fetchF(feed){let le;for(const p of PX){try{const r=await fetch(p(feed.url),{signal:AbortSignal.timeout(10000)});if(!r.ok)throw new Error('HTTP '+r.status);const ct2=r.headers.get('content-type')||'';let xml;if(ct2.includes('json')){const d=await r.json();xml=d.contents||d;}else{xml=await r.text();}if(typeof xml==='string'&&xml.includes('<item'))return pRSS(xml,feed);throw new Error('inv');}catch(e){le=e;}}throw le;}
+function pRSS(x,feed){const doc=new DOMParser().parseFromString(x,'text/xml');return[...doc.querySelectorAll('item')].map(it=>{const t=it.querySelector('title')?.textContent?.trim()||'';let l=(it.querySelector('link')?.textContent||it.querySelector('link')?.getAttribute('href')||'').replace(/[
+]/g,'').trim();const p=it.querySelector('pubDate')?.textContent?.trim()||'';const d=(it.querySelector('description')?.textContent||'').replace(/<[^>]*>/g,'').trim().slice(0,300);return{t,link:l,pd:p?new Date(p).toISOString():new Date().toISOString(),d,src:feed.name,cls:feed.cls||'sd'};}).filter(i=>i.t&&i.link);}
+function setSrc(src,btn){sf=src;document.querySelectorAll('#srcBar .fbt').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render();}
+function bSrc(){const srcs=[...new Set(all.map(i=>i.src))];const bar=document.getElementById('srcBar');bar.innerHTML='<button class="fbt '+(sf==='all'?'active':'')+'" onclick="setSrc('all',this)">Todos</button>';srcs.forEach(s=>{const b=document.createElement('button');b.className='fbt'+(sf===s?' active':'');b.textContent=s;b.onclick=function(){setSrc(s,this);};bar.appendChild(b);});}
+function bKw(){const bar=document.getElementById('kwBar');if(!cfg.keywords.length){bar.innerHTML='<span class="kl">Palavras-chave:</span><span style="font-size:12px;color:#aaa">Nenhuma — exibindo todas as notícias</span>';return;}bar.innerHTML='<span class="kl">Palavras-chave:</span>';const ac=document.createElement('span');ac.className='kc'+(kf==='all'?' active':'');ac.textContent='Todas';ac.onclick=function(){kf='all';document.querySelectorAll('.kc').forEach(c=>c.classList.remove('active'));this.classList.add('active');render();};bar.appendChild(ac);cfg.keywords.forEach(kw=>{const c=document.createElement('span');c.className='kc'+(kf===kw?' active':'');c.textContent=kw;if(!all.some(i=>mKw(i,kw)))c.classList.add('dim');c.onclick=function(){if(kf===kw){kf='all';document.querySelectorAll('.kc').forEach(c=>c.classList.remove('active'));ac.classList.add('active');}else{kf=kw;document.querySelectorAll('.kc').forEach(c=>c.classList.remove('active'));this.classList.add('active');}render();};bar.appendChild(c);});}
+function mKw(i,kw){const q=kw.toLowerCase();return i.t.toLowerCase().includes(q)||i.d.toLowerCase().includes(q);}
+function gKw(i){if(!cfg.keywords.length)return null;return cfg.keywords.find(kw=>mKw(i,kw))||null;}
+function render(){const q=document.getElementById('sb').value.toLowerCase().trim();let items=all.filter(i=>{const so=sf==='all'||i.src===sf;const ko=kf==='all'||mKw(i,kf);const qo=!q||i.t.toLowerCase().includes(q)||i.src.toLowerCase().includes(q);return so&&ko&&qo;});if(cfg.keywords.length&&kf==='all'){const f=items.filter(i=>cfg.keywords.some(kw=>mKw(i,kw)));if(f.length>0)items=f;}document.getElementById('nc').textContent=items.length?items.length+' notícia'+(items.length!==1?'s':''):'';const nl=document.getElementById('nl');if(!items.length){nl.innerHTML='<div id="em"><div class="ico">🔎</div><h3>Sem resultados</h3><p>Tente remover filtros ou aguarde a próxima atualização.</p></div>';return;}nl.innerHTML=items.map((i,idx)=>{const mk=gKw(i);return'<div class="ni" style="animation-delay:'+Math.min(idx,20)*0.02+'s"><span class="ns '+i.cls+'">'+esc(i.src)+'</span><a class="nt" href="'+esc(i.link)+'" target="_blank" rel="noopener">'+esc(i.t)+'</a>'+(mk?'<span class="nk">'+esc(mk)+'</span>':'')+'<span class="nd">'+fd(i.pd)+'</span></div>';}).join('');}
+function openS(){document.getElementById('ct').value=cfg.title;document.getElementById('cs').value=cfg.sub;document.getElementById('ci').value=cfg.interval;document.getElementById('ck').value=cfg.keywords.join('
+');document.getElementById('cm').value=cfg.maxItems||500;document.getElementById('cf').value=cfg.feeds.map(f=>f.name+'|'+f.url).join('
+');document.getElementById('so').classList.add('open');}
+function closeS(){document.getElementById('so').classList.remove('open');}
+function saveS(){cfg.title=document.getElementById('ct').value.trim()||'Clipping';cfg.sub=document.getElementById('cs').value.trim();cfg.interval=parseInt(document.getElementById('ci').value)||0;cfg.maxItems=parseInt(document.getElementById('cm').value)||500;cfg.keywords=document.getElementById('ck').value.split('
+').map(s=>s.trim()).filter(Boolean);const ls=document.getElementById('cf').value.split('
+').map(s=>s.trim()).filter(Boolean);if(ls.length){cfg.feeds=ls.map(l=>{const[n,...r]=l.split('|');const u=r.join('|').trim();const ex=DF.find(f=>f.name===n.trim());return{name:n.trim(),url:u,cls:ex?ex.cls:'sd'};}).filter(f=>f.name&&f.url);}localStorage.setItem('ccfg',JSON.stringify(cfg));apT();closeS();clearTimeout(ct);kf='all';sf='all';bKw();bSrc();document.getElementById('fr').style.display='none';doFetch();}
+function expCSV(){if(!all.length){alert('Nenhuma notícia para exportar.');return;}const h=['Fonte','Título','URL','Data','Palavra-chave'];const rows=all.map(i=>['"'+i.src+'"','"'+(i.t||'').replace(/"/g,'""')+'"','"'+i.link+'"','"'+i.pd+'"','"'+(gKw(i)||'')+'"']);const csv='﻿'+[h.join(','),...rows.map(r=>r.join(','))].join('
+');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='clipping_'+new Date().toISOString().slice(0,10)+'.csv';a.click();}
+</script>
+</body>
+</html>
