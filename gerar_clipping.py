@@ -3,13 +3,29 @@ import datetime
 import pytz
 import html
 import os
+import urllib.request
 
 BR = pytz.timezone("America/Sao_Paulo")
 agora = datetime.datetime.now(BR)
 
+# User-Agent de browser real para desbloquear feeds que rejeitam bots
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+def parse_feed(url):
+    """Faz parse do feed com User-Agent de browser."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/rss+xml,application/xml,text/xml,*/*"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            content = resp.read()
+        feed = feedparser.parse(content)
+        return feed
+    except Exception:
+        return feedparser.FeedParserDict(entries=[])
+
 FEEDS = {
     "Valor": [
-        "https://valor.globo.com/rss/valor-economico",
+        "https://valor.globo.com/rss/",
+        "https://valor.globo.com/ultimas-noticias/rss/",
         "https://www.valor.com.br/rss",
     ],
     "Folha": [
@@ -18,11 +34,13 @@ FEEDS = {
         "https://feeds.folha.uol.com.br/mercado/rss091.xml",
     ],
     "Globo": [
-        "https://oglobo.globo.com/rss.xml",
         "https://g1.globo.com/rss/g1/",
+        "https://g1.globo.com/rss/g1/economia/noticia/rss.xml",
+        "https://oglobo.globo.com/rss.xml",
     ],
     "Estadao": [
         "https://www.estadao.com.br/rss/ultimas.xml",
+        "https://politica.estadao.com.br/rss/ultimas",
         "https://economia.estadao.com.br/rss/ultimas",
     ],
     "CNN Brasil": [
@@ -44,9 +62,13 @@ LIMITE_HORAS = 12
 noticias = []
 
 for veiculo, urls in FEEDS.items():
+    coletado = False
     for url in urls:
+        if coletado:
+            break
         try:
-            feed = feedparser.parse(url)
+            feed = parse_feed(url)
+            entradas = []
             for entry in feed.entries[:30]:
                 titulo = html.escape(entry.get("title", "").strip())
                 link = entry.get("link", "#")
@@ -60,16 +82,22 @@ for veiculo, urls in FEEDS.items():
                 else:
                     hora_str = ""
                 if titulo and link:
-                    noticias.append({
+                    entradas.append({
                         "veiculo": veiculo,
                         "titulo": titulo,
                         "link": link,
                         "hora": hora_str,
                         "dt": pub or (0,),
                     })
-            break
-        except Exception:
+            if entradas:
+                noticias.extend(entradas)
+                coletado = True
+                print(f"OK: {veiculo} via {url} ({len(entradas)} noticias)")
+        except Exception as e:
+            print(f"ERRO: {veiculo} via {url}: {e}")
             continue
+    if not coletado:
+        print(f"FALHOU: {veiculo} - nenhum feed funcionou")
 
 noticias.sort(key=lambda x: x["dt"], reverse=True)
 
@@ -135,17 +163,9 @@ HTML = f"""<!DOCTYPE html>
   .hora {{ color: #999; font-size: 0.82em; margin-left: 4px; }}
   strong {{ color: #444; }}
   .total {{ color: #888; font-size: 0.85em; margin-bottom: 10px; }}
-  .gear-btn {{
-    background: none; border: none; cursor: pointer; font-size: 1.3em;
-    padding: 4px 8px; border-radius: 50%; transition: transform 0.3s;
-    color: #666; line-height: 1;
-  }}
+  .gear-btn {{ background: none; border: none; cursor: pointer; font-size: 1.3em; padding: 4px 8px; border-radius: 50%; transition: transform 0.3s; color: #666; line-height: 1; }}
   .gear-btn:hover {{ transform: rotate(45deg); color: #333; }}
-  .kw-panel {{
-    display: none; background: #fff; border: 1px solid #ddd;
-    border-radius: 10px; padding: 16px; margin-bottom: 20px;
-    max-width: 500px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  }}
+  .kw-panel {{ display: none; background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 20px; max-width: 500px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }}
   .kw-panel.aberto {{ display: block; }}
   .kw-panel h3 {{ font-size: 0.95em; margin-bottom: 10px; color: #444; }}
   .kw-input-row {{ display: flex; gap: 8px; margin-bottom: 10px; }}
@@ -166,7 +186,7 @@ HTML = f"""<!DOCTYPE html>
 <div class="meta">
   <span>Atualizado em <strong id="hora-label">{hora_atualizacao}</strong> | {total} noticias (ultimas {LIMITE_HORAS}h)</span>
   <button class="btn-atualizar" onclick="recarregar(this)" title="Buscar atualizacoes">
-    <svg id="icon-reload" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="1 4 1 10 7 10"></polyline>
       <path d="M3.51 15a9 9 0 1 0 .49-4.36"></path>
     </svg>
@@ -266,7 +286,6 @@ function aplicarFiltros() {{
 function recarregar(btn) {{
   btn.classList.add('girando');
   btn.disabled = true;
-  // Recarrega sem cache para pegar versao nova do GitHub Pages
   const url = location.href.split('?')[0] + '?t=' + Date.now();
   location.replace(url);
 }}
