@@ -114,7 +114,16 @@ HTML = f"""<!DOCTYPE html>
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{ font-family: Arial, sans-serif; background: #fff8f6; color: #222; margin: 40px; line-height: 1.7; }}
   h1 {{ font-size: 1.6em; margin-bottom: 4px; }}
-  .meta {{ color: #888; font-size: 0.9em; margin-bottom: 20px; }}
+  .meta {{ color: #888; font-size: 0.9em; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }}
+  .btn-atualizar {{
+    background: #fff; border: 1px solid #ccc; border-radius: 20px;
+    padding: 4px 14px; font-size: 0.85em; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px;
+    transition: all 0.15s; color: #444;
+  }}
+  .btn-atualizar:hover {{ background: #f0f0f0; border-color: #999; }}
+  .btn-atualizar.girando svg {{ animation: girar 0.8s linear infinite; }}
+  @keyframes girar {{ from {{ transform: rotate(0deg); }} to {{ transform: rotate(360deg); }} }}
   .filtros {{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; align-items: center; }}
   .filtro {{ background: #fff; border: 1px solid #ccc; border-radius: 20px; padding: 5px 14px; font-size: 0.85em; cursor: pointer; transition: all 0.15s; }}
   .filtro:hover {{ background: #f0e8e5; }}
@@ -126,16 +135,12 @@ HTML = f"""<!DOCTYPE html>
   .hora {{ color: #999; font-size: 0.82em; margin-left: 4px; }}
   strong {{ color: #444; }}
   .total {{ color: #888; font-size: 0.85em; margin-bottom: 10px; }}
-
-  /* Engrenagem */
   .gear-btn {{
     background: none; border: none; cursor: pointer; font-size: 1.3em;
     padding: 4px 8px; border-radius: 50%; transition: transform 0.3s;
     color: #666; line-height: 1;
   }}
   .gear-btn:hover {{ transform: rotate(45deg); color: #333; }}
-
-  /* Painel de palavras-chave */
   .kw-panel {{
     display: none; background: #fff; border: 1px solid #ddd;
     border-radius: 10px; padding: 16px; margin-bottom: 20px;
@@ -146,28 +151,28 @@ HTML = f"""<!DOCTYPE html>
   .kw-input-row {{ display: flex; gap: 8px; margin-bottom: 10px; }}
   .kw-input {{ flex: 1; padding: 6px 10px; border: 1px solid #ccc; border-radius: 20px; font-size: 0.9em; outline: none; }}
   .kw-input:focus {{ border-color: #999; }}
-  .kw-add-btn {{
-    background: #333; color: #fff; border: none; border-radius: 20px;
-    padding: 6px 14px; font-size: 0.85em; cursor: pointer;
-  }}
+  .kw-add-btn {{ background: #333; color: #fff; border: none; border-radius: 20px; padding: 6px 14px; font-size: 0.85em; cursor: pointer; }}
   .kw-add-btn:hover {{ background: #555; }}
   .kw-tags {{ display: flex; flex-wrap: wrap; gap: 6px; }}
-  .kw-tag {{
-    background: #f0e8e5; border: 1px solid #e0c8c0; border-radius: 20px;
-    padding: 3px 10px; font-size: 0.82em; display: flex; align-items: center; gap: 5px;
-  }}
-  .kw-tag .remove {{ cursor: pointer; color: #999; font-size: 1em; line-height: 1; }}
+  .kw-tag {{ background: #f0e8e5; border: 1px solid #e0c8c0; border-radius: 20px; padding: 3px 10px; font-size: 0.82em; display: flex; align-items: center; gap: 5px; }}
+  .kw-tag .remove {{ cursor: pointer; color: #999; font-size: 1em; }}
   .kw-tag .remove:hover {{ color: #c00; }}
   .kw-hint {{ font-size: 0.8em; color: #aaa; margin-top: 8px; }}
-  .kw-active-badge {{
-    background: #e8f4e8; border: 1px solid #b0d9b0; color: #2a7a2a;
-    border-radius: 20px; padding: 3px 10px; font-size: 0.8em;
-  }}
+  .kw-active-badge {{ background: #e8f4e8; border: 1px solid #b0d9b0; color: #2a7a2a; border-radius: 20px; padding: 3px 10px; font-size: 0.8em; }}
 </style>
 </head>
 <body>
 <h1>Noticias Brasil - Filtradas</h1>
-<div class="meta">Atualizado em {hora_atualizacao} | {total} noticias (ultimas {LIMITE_HORAS}h)</div>
+<div class="meta">
+  <span>Atualizado em <strong id="hora-label">{hora_atualizacao}</strong> | {total} noticias (ultimas {LIMITE_HORAS}h)</span>
+  <button class="btn-atualizar" onclick="recarregar(this)" title="Buscar atualizacoes">
+    <svg id="icon-reload" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="1 4 1 10 7 10"></polyline>
+      <path d="M3.51 15a9 9 0 1 0 .49-4.36"></path>
+    </svg>
+    Atualizar
+  </button>
+</div>
 
 <div class="filtros">
 {botoes}
@@ -182,7 +187,7 @@ HTML = f"""<!DOCTYPE html>
     <button class="kw-add-btn" onclick="adicionarKw()">Adicionar</button>
   </div>
   <div class="kw-tags" id="kwTags"></div>
-  <p class="kw-hint">So aparecem noticias que contem pelo menos uma das palavras. Deixe vazio para ver tudo.</p>
+  <p class="kw-hint">So aparecem noticias com pelo menos uma das palavras. Deixe vazio para ver tudo.</p>
 </div>
 
 <p class="total" id="contagem">{total} noticias exibidas</p>
@@ -258,7 +263,14 @@ function aplicarFiltros() {{
   document.getElementById('contagem').textContent = count + ' noticias exibidas';
 }}
 
-// Inicia com keywords salvas
+function recarregar(btn) {{
+  btn.classList.add('girando');
+  btn.disabled = true;
+  // Recarrega sem cache para pegar versao nova do GitHub Pages
+  const url = location.href.split('?')[0] + '?t=' + Date.now();
+  location.replace(url);
+}}
+
 renderTags();
 aplicarFiltros();
 </script>
