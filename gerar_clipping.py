@@ -4,11 +4,9 @@ import pytz
 import html
 import os
 
-# Fuso horario de Brasilia
 BR = pytz.timezone("America/Sao_Paulo")
 agora = datetime.datetime.now(BR)
 
-# Feeds RSS dos veiculos
 FEEDS = {
     "Valor": [
         "https://valor.globo.com/rss/valor-economico",
@@ -91,7 +89,7 @@ def montar_itens(lst):
     for n in lst:
         hora = f'<span class="hora">{n["hora"]}</span>' if n["hora"] else ""
         linhas.append(
-            f'<li data-veiculo="{n["veiculo"]}">'
+            f'<li data-veiculo="{n["veiculo"]}" data-titulo="{n["titulo"].lower()}">'
             f'<strong>[{html.escape(n["veiculo"])}]</strong> '
             f'<a href="{n["link"]}" target="_blank">{n["titulo"]}</a> '
             f'{hora}</li>'
@@ -99,9 +97,9 @@ def montar_itens(lst):
     return "\n".join(linhas)
 
 itens_html = montar_itens(noticias_unicas)
-botoes = '<button class="filtro ativo" onclick="filtrar(this, \'Todos\')">Todos</button>\n'
+botoes = '<button class="filtro ativo" onclick="filtrarVeiculo(this, \'Todos\')">Todos</button>\n'
 for v in veiculos_presentes:
-    botoes += f'<button class="filtro" onclick="filtrar(this, \'{v}\')">{v}</button>\n'
+    botoes += f'<button class="filtro" onclick="filtrarVeiculo(this, \'{v}\')">{v}</button>\n'
 
 total = len(noticias_unicas)
 hora_atualizacao = agora.strftime("%d/%m %H:%M")
@@ -117,7 +115,7 @@ HTML = f"""<!DOCTYPE html>
   body {{ font-family: Arial, sans-serif; background: #fff8f6; color: #222; margin: 40px; line-height: 1.7; }}
   h1 {{ font-size: 1.6em; margin-bottom: 4px; }}
   .meta {{ color: #888; font-size: 0.9em; margin-bottom: 20px; }}
-  .filtros {{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }}
+  .filtros {{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; align-items: center; }}
   .filtro {{ background: #fff; border: 1px solid #ccc; border-radius: 20px; padding: 5px 14px; font-size: 0.85em; cursor: pointer; transition: all 0.15s; }}
   .filtro:hover {{ background: #f0e8e5; }}
   .filtro.ativo {{ background: #333; color: #fff; border-color: #333; }}
@@ -128,31 +126,141 @@ HTML = f"""<!DOCTYPE html>
   .hora {{ color: #999; font-size: 0.82em; margin-left: 4px; }}
   strong {{ color: #444; }}
   .total {{ color: #888; font-size: 0.85em; margin-bottom: 10px; }}
+
+  /* Engrenagem */
+  .gear-btn {{
+    background: none; border: none; cursor: pointer; font-size: 1.3em;
+    padding: 4px 8px; border-radius: 50%; transition: transform 0.3s;
+    color: #666; line-height: 1;
+  }}
+  .gear-btn:hover {{ transform: rotate(45deg); color: #333; }}
+
+  /* Painel de palavras-chave */
+  .kw-panel {{
+    display: none; background: #fff; border: 1px solid #ddd;
+    border-radius: 10px; padding: 16px; margin-bottom: 20px;
+    max-width: 500px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }}
+  .kw-panel.aberto {{ display: block; }}
+  .kw-panel h3 {{ font-size: 0.95em; margin-bottom: 10px; color: #444; }}
+  .kw-input-row {{ display: flex; gap: 8px; margin-bottom: 10px; }}
+  .kw-input {{ flex: 1; padding: 6px 10px; border: 1px solid #ccc; border-radius: 20px; font-size: 0.9em; outline: none; }}
+  .kw-input:focus {{ border-color: #999; }}
+  .kw-add-btn {{
+    background: #333; color: #fff; border: none; border-radius: 20px;
+    padding: 6px 14px; font-size: 0.85em; cursor: pointer;
+  }}
+  .kw-add-btn:hover {{ background: #555; }}
+  .kw-tags {{ display: flex; flex-wrap: wrap; gap: 6px; }}
+  .kw-tag {{
+    background: #f0e8e5; border: 1px solid #e0c8c0; border-radius: 20px;
+    padding: 3px 10px; font-size: 0.82em; display: flex; align-items: center; gap: 5px;
+  }}
+  .kw-tag .remove {{ cursor: pointer; color: #999; font-size: 1em; line-height: 1; }}
+  .kw-tag .remove:hover {{ color: #c00; }}
+  .kw-hint {{ font-size: 0.8em; color: #aaa; margin-top: 8px; }}
+  .kw-active-badge {{
+    background: #e8f4e8; border: 1px solid #b0d9b0; color: #2a7a2a;
+    border-radius: 20px; padding: 3px 10px; font-size: 0.8em;
+  }}
 </style>
 </head>
 <body>
 <h1>Noticias Brasil - Filtradas</h1>
 <div class="meta">Atualizado em {hora_atualizacao} | {total} noticias (ultimas {LIMITE_HORAS}h)</div>
+
 <div class="filtros">
 {botoes}
+  <button class="gear-btn" onclick="togglePainel(this)" title="Filtrar por palavras-chave">&#9881;</button>
+  <span id="kw-badge" class="kw-active-badge" style="display:none"></span>
 </div>
+
+<div class="kw-panel" id="kwPanel">
+  <h3>&#128269; Filtrar por palavras-chave</h3>
+  <div class="kw-input-row">
+    <input class="kw-input" id="kwInput" type="text" placeholder="Ex: Lula, dolar, STF..." onkeydown="if(event.key==='Enter') adicionarKw()">
+    <button class="kw-add-btn" onclick="adicionarKw()">Adicionar</button>
+  </div>
+  <div class="kw-tags" id="kwTags"></div>
+  <p class="kw-hint">So aparecem noticias que contem pelo menos uma das palavras. Deixe vazio para ver tudo.</p>
+</div>
+
 <p class="total" id="contagem">{total} noticias exibidas</p>
+
 <ul id="lista">
 {itens_html}
 </ul>
+
 <script>
-function filtrar(btn, veiculo) {{
+let veiculoAtivo = 'Todos';
+let keywords = JSON.parse(localStorage.getItem('clipping_kw') || '[]');
+
+function salvarKw() {{ localStorage.setItem('clipping_kw', JSON.stringify(keywords)); }}
+
+function renderTags() {{
+  const container = document.getElementById('kwTags');
+  container.innerHTML = keywords.map((kw, i) =>
+    `<span class="kw-tag">${{kw}}<span class="remove" onclick="removerKw(${{i}})">&#10005;</span></span>`
+  ).join('');
+  const badge = document.getElementById('kw-badge');
+  if (keywords.length > 0) {{
+    badge.style.display = '';
+    badge.textContent = keywords.length === 1 ? '1 palavra-chave ativa' : keywords.length + ' palavras-chave ativas';
+  }} else {{
+    badge.style.display = 'none';
+  }}
+}}
+
+function adicionarKw() {{
+  const input = document.getElementById('kwInput');
+  const val = input.value.trim().toLowerCase();
+  if (val && !keywords.includes(val)) {{
+    keywords.push(val);
+    salvarKw();
+    renderTags();
+    aplicarFiltros();
+  }}
+  input.value = '';
+  input.focus();
+}}
+
+function removerKw(i) {{
+  keywords.splice(i, 1);
+  salvarKw();
+  renderTags();
+  aplicarFiltros();
+}}
+
+function togglePainel(btn) {{
+  const painel = document.getElementById('kwPanel');
+  painel.classList.toggle('aberto');
+  btn.style.transform = painel.classList.contains('aberto') ? 'rotate(90deg)' : '';
+}}
+
+function filtrarVeiculo(btn, veiculo) {{
   document.querySelectorAll('.filtro').forEach(b => b.classList.remove('ativo'));
   btn.classList.add('ativo');
+  veiculoAtivo = veiculo;
+  aplicarFiltros();
+}}
+
+function aplicarFiltros() {{
   const itens = document.querySelectorAll('#lista li');
   let count = 0;
   itens.forEach(li => {{
-    const mostrar = veiculo === 'Todos' || li.dataset.veiculo === veiculo;
+    const okVeiculo = veiculoAtivo === 'Todos' || li.dataset.veiculo === veiculoAtivo;
+    const titulo = li.dataset.titulo || '';
+    const okKw = keywords.length === 0 || keywords.some(kw => titulo.includes(kw));
+    const mostrar = okVeiculo && okKw;
     li.style.display = mostrar ? '' : 'none';
     if (mostrar) count++;
   }});
   document.getElementById('contagem').textContent = count + ' noticias exibidas';
 }}
+
+// Inicia com keywords salvas
+renderTags();
+aplicarFiltros();
 </script>
 </body>
 </html>"""
