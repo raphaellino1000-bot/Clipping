@@ -180,7 +180,7 @@ header { background: var(--black); color: white; border-bottom: 3px solid var(--
     <div class="toolbar-right">
       <span id="newsCount"></span>
       <button class="t-btn" onclick="exportCSV()">⬇ CSV</button>
-      <button class="t-btn" onclick="openSettings()">ښ� Config</button>
+      <button class="t-btn" onclick="openSettings()">⚙ Config</button>
     </div>
   </div>
 </div>
@@ -533,12 +533,13 @@ function renderList(){
     return `<div class="news-item" style="animation-delay:${Math.min(i,20)*0.02}s">
       <span class="ni-source ${item.cls||'src-default'}">${esc(item.source)}</span>
       <a class="ni-title" href="${esc(item.link)}" target="_blank" rel="noopener">${esc(item.title)}</a>
-      ${mk?`<span class="ni-kw">${esc(mk)}</span>`:'')}
+      ${mk?'<span class="ni-kw">'+esc(mk+)'</span>':''}
       <span class="ni-date">${fmtDate(item.pubDate)}</span>
     </div>`;
   }).join('');
 }
 
+// ── EXPORT ─────────────────────────────────────────────────────
 function exportCSV(){
   if(!allItems.length){ alert('Nenhuma notícia para exportar.'); return; }
   const h=['Fonte','Título','URL','Data','Palavra-chave'];
